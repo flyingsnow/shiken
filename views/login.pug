@@ -1,0 +1,14 @@
+extends layout
+block content
+    h2#title login
+    #{message}
+    p Try accessing <a href="/restricted">/restricted</a>, then authenticate with "tj" and "foobar".
+    form(action='/login', method='post')
+        p
+            label(for='username') Username:
+            input(type='text',value='',name='username',placeholder='USER')
+        p
+            label(for='password') Password:
+            input(type='text',value='',name='password',placeholder='PASSWORD')
+        p
+            input(type='submit' value='Login')

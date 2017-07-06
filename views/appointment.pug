@@ -1,0 +1,102 @@
+extends layout
+block content
+    script(type="text/javascript").
+      function setDateTime() {
+        flatpickr("#selectDate", {});
+        flatpickr("#startTime",
+        {
+            enableTime: true,
+            noCalendar: true,
+
+            enableSeconds: false, // disabled by default
+
+            time_24hr: false, // AM/PM time picker is used by default
+
+            // default format
+            dateFormat: "H:i", 
+
+            // initial values for time. don't use these to preload a date
+            defaultHour: 9,
+            defaultMinute: 0
+
+            // Preload time with defaultDate instead:
+            // defaultDate: "3:30"
+        }
+        );
+        flatpickr("#endTime",
+        {
+            enableTime: true,
+            noCalendar: true,
+
+            enableSeconds: false, // disabled by default
+
+            time_24hr: false, // AM/PM time picker is used by default
+
+            // default format
+            dateFormat: "H:i", 
+
+            // initial values for time. don't use these to preload a date
+            defaultHour: 17,
+            defaultMinute: 30
+
+            // Preload time with defaultDate instead:
+            // defaultDate: "3:30"
+        }
+        );
+      }
+
+      function updateSelectNo() {
+        setDateTime();
+      }
+
+      function appointment() {
+        var appointmentInfo= new Object();
+        appointmentInfo.equipmentNo= $("#equipmentNo").val();
+        appointmentInfo.appointDate= $("#selectDate").val();
+        appointmentInfo.startTime= $("#startTime").val();
+        appointmentInfo.endTime= $("#endTime").val();
+        $.post("/makeappointment", appointmentInfo, function(data) {
+            $("#outputheader").text(data);
+        },"text");
+
+      }
+    h3#title=title
+    .panel-body
+      p 实验台 ：
+            - equipmentNo = [1, 2, 3, 4, 5, 6, 7, 8]
+            select.selectpicker(onchange= "updateSelectNo(this)")#equipmentNo
+                each val in  equipmentNo
+                    option( value= val) #{val}
+      .col-sm-4
+        h3.panel-title
+        .panel-body
+          p 实验日期
+          input#selectDate(class='faltpickr', type='text',placeholder='Select Date')
+          p 开始时间
+          input#startTime(class='faltpickr', type='text',placeholder='Select start time')
+          p 结束时间
+          input#endTime(class='faltpickr', type='text',placeholder='Select end time')
+          p
+          p
+        .panel-body
+            - var classes = ['btn', 'btn-primary']
+            a(class=classes onclick= 'appointment()') make an appointment 
+
+        h3#outputheader NONONO
+
+        form(action='/makeappointment_from', method='post')
+          p 实验台 ：
+                - equipmentNo = [1, 2, 3, 4, 5, 6, 7, 8]
+                select.selectpicker(onchange= "updateSelectNo(this)", name='equipmentNo')#equipmentNo
+                    each val in  equipmentNo
+                        option( value= val) #{val}
+
+          p 实验日期
+          input#selectDate(class='faltpickr', type='text',placeholder='Select Date', name= 'selectDate')
+          p 开始时间
+          input#startTime(class='faltpickr', type='text',placeholder='Select start time', name='startTime')
+          p 结束时间
+          input#endTime(class='faltpickr', type='text',placeholder='Select end time', name= 'endTime')
+          p
+          - var classes = ['btn', 'btn-primary']
+          input(class=classes type='submit' value='Make An Apointment')

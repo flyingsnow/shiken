@@ -1,0 +1,45 @@
+extends layout
+block content
+    script(type="text/javascript").
+      function init() {
+        flatpickr("#selectDate", {});
+        flatpickr("#endTime", 
+        {
+            enableTime: true,
+            noCalendar: true,
+
+            enableSeconds: false, // disabled by default
+
+            time_24hr: false, // AM/PM time picker is used by default
+
+            // default format
+            dateFormat: "H:i", 
+
+            // initial values for time. don't use these to preload a date
+            defaultHour: 12,
+            defaultMinute: 0
+
+            // Preload time with defaultDate instead:
+            // defaultDate: "3:30"
+        }
+        );
+      }
+      init();
+    h3#title=title
+    .panel-body
+      p 实验台 ：
+            - equipmentNo = ['1', '2', '3','4','6','7','8']
+            select.selectpicker(onchange= "updateSelectNo(this)")#equipmentNo
+                each val in  equipmentNo
+                    option( value= '#{val}') #{val}
+      .col-sm-4
+        h3.panel-title
+        .panel-body
+            - var classes = ['btn', 'btn-primary']
+            a(class=classes onclick= 'init()') Compare
+        .panel-body
+          input#selectDate(class='faltpickr', type='text',placeholder='Select Date')
+          p
+          input#startTime(class='faltpickr', type='text',placeholder='Select start time')
+          p
+          input#endTime(class='faltpickr', type='text',placeholder='Select end time')
