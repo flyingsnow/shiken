@@ -1,0 +1,16 @@
+extends layout
+block content
+    h2#title logon
+    #{message}
+    - var classes = ['btn', 'btn-primary']
+    form(action='/join', method='post')
+        p
+            label(for='username') Username:
+            input(type='text',value='',name='name',placeholder='USER')
+        p
+            label(for='password') Password:
+            input(type='text',value='',name='password',placeholder='PASSWORD')
+        p
+            input(class= classes type='submit' value='JOIN US')
+
+    a(class= classes href= '/login') Login 

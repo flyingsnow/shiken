@@ -6,12 +6,12 @@ var db;
 
 var router = express.Router();
 
-var url = 'mongodb://localhost:27017';
+var url = 'mongodb://localhost:27017/mydb';
 // Use connect method to connect to the server
 MongoClient.connect(url, function(err, database) {
     assert.equal(null, err);
     console.log("Connected successfully to server");
-    db =database;
+    db = database;
 });
 
 
@@ -34,6 +34,10 @@ router.get('/appointment', restrict, function(req, res, next) {
 });
 
 router.post('/makeappointment', restrict, function(req, res, next) {
+    db.collection('quotes').save(req.body, (err, result) => {
+        if (err) return console.log(err);
+        console.log('saved to database');
+    });
     //console.log(req.session);
     res.send(new Buffer(req.session.user.name + ', your appointment is accept!'));
 });
@@ -41,13 +45,52 @@ router.post('/makeappointment', restrict, function(req, res, next) {
 router.post('/makeappointment_from', restrict, function(req, res, next) {
     console.log('From_req_boyd:');
     console.log(req.body);
+
+    db.collection('appointment').save(req.body, (err, result) => {
+        if (err) return console.log(err);
+        console.log('saved to database');
+    });
+    res.send(new Buffer(req.session.user.name + ', your appointment is accept!'));
 });
+
+/* GET join page. */
+router.get('/join', function(
+req, res,next) {
+	  res.render('join',{});	
+});
+
+router.post('/join', function(req, res){
+    var user = req.body;
+    db.collection('users').count({"name":user.name}, (err, count) => {
+        console.log("username : " + user.name);
+        console.log("count: " + count);
+        if (err) return console.log(err);
+        if ( count > 0 ) {
+	          res.render('join',{message: 'username in used.'});	
+            return console.log("username is in used");
+        }
+        else {
+            hash({ password: user.password }, function (err, pass, salt, hash) {
+                if (err) throw err;
+                // store the salt & hash in the "db"
+                user.salt = salt;
+                user.hash = hash;
+                db.collection('users').save(user, (err, result) => {
+                    if (err) return console.log(err);
+                    console.log('saved to database');
+                    res.redirect('/login');
+                });
+            });
+        }
+    });
+});
+
 /* GET login page. */
 router.get('/login', function(req, res,next) {
 	  res.render('login',{message: res.locals.message});	
 });
 
-
+/*
 var users = {
     tj: { name: 'tj' },
     he: { name: 'he' },
@@ -61,6 +104,10 @@ hash({ password: 'foobar' }, function (err, pass, salt, hash) {
     // store the salt & hash in the "db"
     users.tj.salt = salt;
     users.tj.hash = hash;
+    db.collection('users').save(users.tj, (err, result) => {
+        if (err) return console.log(err);
+        console.log('saved to database');
+    });
 });
 
 hash({ password: 'ivan' }, function (err, pass, salt, hash) {
@@ -68,6 +115,10 @@ hash({ password: 'ivan' }, function (err, pass, salt, hash) {
     // store the salt & hash in the "db"
     users.he.salt = salt;
     users.he.hash = hash;
+    db.collection('users').save(users.he, (err, result) => {
+        if (err) return console.log(err);
+        console.log('saved to database');
+    });
 });
 
 hash({ password: 'pan' }, function (err, pass, salt, hash) {
@@ -75,22 +126,38 @@ hash({ password: 'pan' }, function (err, pass, salt, hash) {
     // store the salt & hash in the "db"
     users.wl.salt = salt;
     users.wl.hash = hash;
+    db.collection('users').save(users.wl, (err, result) => {
+        if (err) return console.log(err);
+        console.log('saved to database');
+    });
 });
+*/
+
 // Authenticate using our plain-object database of doom!
 function authenticate(name, pass, fn) {
-    if (!module.parent) console.log('authenticating %s:%s', name, pass);
-    var user = users[name];
-    // query the db for the given username
-    if (!user) return fn(new Error('cannot find user'));
-    // apply the same algorithm to the POSTed password, applying
-    // the hash against the pass / salt, if there is a match we
-    // found the user
-    hash({ password: pass, salt: user.salt }, function (err, pass, salt, hash) {
-        if (err) return fn(err);
-        if (hash == user.hash) return fn(null, user);
-        fn(new Error('invalid password'));
+
+    db.collection('users').findOne({"name":name}, (err, user) => {
+        if (user) {
+            if (!module.parent) console.log('authenticating %s:%s', name, pass);
+            //var user = users[name];
+            // query the db for the given username
+            if (!user) return fn(new Error('cannot find user'));
+            // apply the same algorithm to the POSTed password, applying
+            // the hash against the pass / salt, if there is a match we
+            // found the user
+            hash({ password: pass, salt: user.salt }, function (err, pass, salt, hash) {
+                if (err) return fn(err);
+                if (hash == user.hash) return fn(null, user);
+                fn(new Error('invalid password'));
+            });
+        }
+        else {
+            return fn(new Error('user name not exists'));
+        }
     });
 }
+
+
 
 router.post('/login', function(req, res){
     authenticate(req.body.username, req.body.password, function(err, user){
