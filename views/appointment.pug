@@ -6,19 +6,17 @@ block content
         flatpickr("#startTime",
         {
             enableTime: true,
-            noCalendar: true,
 
             enableSeconds: false, // disabled by default
 
             time_24hr: false, // AM/PM time picker is used by default
 
             // default format
-            dateFormat: "H:i", 
+            // dateFormat: "H:i", 
 
             // initial values for time. don't use these to preload a date
             defaultHour: 9,
             defaultMinute: 0
-
             // Preload time with defaultDate instead:
             // defaultDate: "3:30"
         }
@@ -26,14 +24,13 @@ block content
         flatpickr("#endTime",
         {
             enableTime: true,
-            noCalendar: true,
 
             enableSeconds: false, // disabled by default
 
             time_24hr: false, // AM/PM time picker is used by default
 
             // default format
-            dateFormat: "H:i", 
+            // dateFormat: "H:i", 
 
             // initial values for time. don't use these to preload a date
             defaultHour: 17,
@@ -52,9 +49,9 @@ block content
       function appointment() {
         var appointmentInfo= new Object();
         appointmentInfo.equipmentNo= $("#equipmentNo").val();
-        appointmentInfo.appointDate= $("#selectDate").val();
-        appointmentInfo.startTime= $("#startTime").val();
-        appointmentInfo.endTime= $("#endTime").val();
+        appointmentInfo.appointDate= new Date($("#selectDate").val());
+        appointmentInfo.startTime= new Date($("#startTime").val());
+        appointmentInfo.endTime= new Date($("#endTime").val());
         $.post("/makeappointment", appointmentInfo, function(data) {
             $("#outputheader").text(data);
         },"text");
