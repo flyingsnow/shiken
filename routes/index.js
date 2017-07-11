@@ -14,7 +14,6 @@ MongoClient.connect(url, function(err, database) {
     db = database;
 });
 
-
 function restrict(req, res, next) {
     if (req.session.user) {
         next();
@@ -34,23 +33,24 @@ router.get('/appointment', restrict, function(req, res, next) {
 });
 
 router.post('/makeappointment', restrict, function(req, res, next) {
-    db.collection('quotes').save(req.body, (err, result) => {
-        if (err) return console.log(err);
-        console.log('saved to database');
+    var appointmentInfo = req.body;
+    appointmentInfo.user = req.session.user.name;
+    // appointmentInfo.userId = req.session.user._id;
+    db.collection('users').findOne({"name":appointmentInfo.user}, (err, user) => {
+        if (user) {
+            appointmentInfo.userId = user._id;
+            console.log('user id: '+ user._id);
+            db.collection('appointment').save(appointmentInfo, (err, result) => {
+                if (err) return console.log(err);
+                console.log('saved to database');
+            });
+            //console.log(req.session);
+            res.send(new Buffer(req.session.user.name + ', your appointment is accept!'));
+        }
+        else {
+            console.log('user name error ');
+        }
     });
-    //console.log(req.session);
-    res.send(new Buffer(req.session.user.name + ', your appointment is accept!'));
-});
-
-router.post('/makeappointment_from', restrict, function(req, res, next) {
-    console.log('From_req_boyd:');
-    console.log(req.body);
-
-    db.collection('appointment').save(req.body, (err, result) => {
-        if (err) return console.log(err);
-        console.log('saved to database');
-    });
-    res.send(new Buffer(req.session.user.name + ', your appointment is accept!'));
 });
 
 /* GET join page. */
@@ -189,11 +189,20 @@ router.get('/logout', function(req, res){
     req.session.destroy(function(){
         res.redirect('/');
     });
-});
+})
 
 router.get('/restricted', restrict, function(req, res){
-    res.redirect('/');
+    res.redirect('/list');
     //res.send('Wahoo! restricted area, click to <a href="/logout">logout</a>');
 });
 
+router.get('/list', restrict, function(req, res){
+    db.collection('appointment').find().toArray(function(err, results) {
+        console.log(results);
+        // send HTML file populated with quotes here
+    });
+
+    res.render('appointment_list', {});
+    //res.send('Wahoo! restricted area, click to <a href="/logout">logout</a>');
+});
 module.exports = router;

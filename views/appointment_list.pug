@@ -1,0 +1,22 @@
+doctype html
+html
+  head
+    title= title
+    link(rel='stylesheet', href='/stylesheets/style.css')
+    link(rel='stylesheet', href='/stylesheets/css/bootstrap.min.css')
+    script(src= '/javascripts/jquery-1.11.3.js')
+    link(rel="stylesheet",href="https://unpkg.com/flatpickr/dist/flatpickr.min.css")
+    script(src="https://unpkg.com/flatpickr")
+
+    block scripts
+    script(type="text/javascript").
+      function initFlatpickr() {
+          flatpickr("#selectDate", {
+            // minDate: "today",
+            defaultDate: "today"
+         });
+      }
+
+  body(onload="initFlatpickr()")
+      h3#title  预约查询,请选择日期
+      input#selectDate(class='faltpickr flatpickr-input active', type='text',placeholder='Select start time')
