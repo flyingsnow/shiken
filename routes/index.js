@@ -33,14 +33,41 @@ router.get('/appointment', restrict, function(req, res, next) {
 });
 
 router.post('/makeappointment', restrict, function(req, res, next) {
-    var appointmentInfo = req.body;
-    appointmentInfo.user = req.session.user.name;
-    // appointmentInfo.userId = req.session.user._id;
-    db.collection('users').findOne({"name":appointmentInfo.user}, (err, user) => {
+    var apoint= req.body;
+    apoint.user = req.session.user.name;
+
+    var startDateTime = new Date(apoint.startDateTime);
+    var endDateTime   = new Date(apoint.endDateTime);
+
+    var sc_appointmentInfo = {
+        equipmentNo:   apoint.equipmentNo,
+        startDateTime: apoint.startDateTime,
+        endDateTime:   apoint.endDateTime,
+        user:          apoint.user,
+        startTime: {
+            "year"    :startDateTime.getFullYear(),
+            "month"   :startDateTime.getMonth(),
+            "date"    :startDateTime.getDate(),
+            "hours"   :startDateTime.getHours(),
+            "minutes" :startDateTime.getMinutes()
+        },
+        endTime: {
+            "year"    :endDateTime.getFullYear(),
+            "month"   :endDateTime.getMonth(),
+            "date"    :endDateTime.getDate(),
+            "hours"   :endDateTime.getHours(),
+            "minutes" :endDateTime.getMinutes() 
+        }
+    };
+
+    // console.log(sc_appointmentInfo);
+    db.collection('users').findOne({"name":sc_appointmentInfo.user}, (err, user) => {
         if (user) {
-            appointmentInfo.userId = user._id;
+            sc_appointmentInfo.userId = user._id;
             console.log('user id: '+ user._id);
-            db.collection('appointment').save(appointmentInfo, (err, result) => {
+
+            // db.collection('appointment').save(appointmentInfo, (err, result) => {
+            db.collection('appointment').save(sc_appointmentInfo, (err, result) => {
                 if (err) return console.log(err);
                 console.log('saved to database');
             });
@@ -196,13 +223,74 @@ router.get('/restricted', restrict, function(req, res){
     //res.send('Wahoo! restricted area, click to <a href="/logout">logout</a>');
 });
 
-router.get('/list', restrict, function(req, res){
-    db.collection('appointment').find().toArray(function(err, results) {
+/*
+// A simple query using the find method on the collection.
+
+MongoClient.connect('mongodb://localhost:27017/mydb', function(err, db) {
+
+    // Create a collection we want to drop later
+    var collection = db.collection('simple_query');
+
+    // Insert a bunch of documents for the testing
+    collection.insertMany([{a:{time:1, date:2}}, {a:2}, {a:3}], {w:1}, function(err, result) {
+
+        // Perform a simple find and return all the documents
+        collection.find().toArray(function(err, docs) {
+
+            // console.log(docs);
+        });
+    });
+
+    collection.find({"a.date":2}).toArray(function(err, results) {
+        console.log(results);
+    });
+});
+
+*/
+//router.get('/list', restrict, function(req, res){
+router.get('/list',  function(req, res){
+    var today = new Date();
+    var year = today.getFullYear();
+    var month = today.getMonth();
+    var date = today.getDate();
+    console.log(today.toString(), month, date);
+    var qurey = {
+        "endTime.year":{ $eq:2017}
+    };
+    console.log(qurey);
+
+    var qurey2 = {
+        // "user": {$eq:"he"},
+        "equipmentNo": {$eq:'8'}
+    };
+    console.log(qurey2);
+    db.collection('appointment').find(qurey).toArray(function(err, results) {
         console.log(results);
         // send HTML file populated with quotes here
     });
 
-    res.render('appointment_list', {});
+    res.render('appointment_list', {results_str:'test'});
     //res.send('Wahoo! restricted area, click to <a href="/logout">logout</a>');
 });
-module.exports = router;
+
+router.post('/list',  function(req, res){
+    var qureyDate = Date.parse(req.body.dateStr);
+    var today = new Date(qureyDate );
+    var year  = today.getFullYear();
+    var month = today.getMonth();
+    var date  = today.getDate();
+
+    var qurey = {
+        "startTime.month":{ $eq:month},
+        "startTime.date":{ $eq:date}
+    };
+
+    db.collection('appointment').find(qurey).toArray(function(err, results) {
+        console.log(results);
+        res.render('appointment_list', {results_str:JSON.stringify(results)});
+        // send HTML file populated with quotes here
+    });
+
+    //res.send('Wahoo! restricted area, click to <a href="/logout">logout</a>');
+});
+module.exports = router; 

@@ -59,32 +59,60 @@ html
       function appointment() {
         var appointmentInfo= new Object();
 
-        var date = new Date($("#startTime").val());
-        var start = new Object();
-        start.year = date.getFullYear();
-        start.month = date.getMonth();
-        start.date = date.getDate();
-        start.hours = date.getHours();
-        start.minutes = date.getMinutes();
+        // var date = new Date($("#startTime").val());
+        // var start = new Object();
+        // start.year = date.getFullYear();
+        // start.month = date.getMonth();
 
-        date = new Date($("#endTime").val());
-        var end = new Object();
-        end.year = date.getFullYear();
-        end.month = date.getMonth();
-        end.date = date.getDate();
-        end.hours = date.getHours();
-        end.minutes = date.getMinutes();
+        // start.date = date.getDate();
+        // start.hours = date.getHours();
+        // start.minutes = date.getMinutes();
+
+        // startInfo = {
+        //  "year" : start.year,
+        //  "month" : start.month,
+        //  "date" : start.date,
+        //  "hours" : start.hours,
+        //  "minutes" : start.minutes
+        // };
+        // date = new Date($("#endTime").val());
+        // var end = new Object();
+        // end.year    = date.getFullYear();
+        // end.month   = date.getMonth();
+        // end.date    = date.getDate();
+        // end.hours   = date.getHours();
+        // end.minutes = date.getMinutes();
 
 
-        appointmentInfo.startTime= start;
-        appointmentInfo.endTime= end;
+        // appointmentInfo.startTime= start;
+        // appointmentInfo.startTime= startInfo;
+        // appointmentInfo.endTime= end;
         appointmentInfo.equipmentNo= parseInt($("#equipmentNo").val());
         appointmentInfo.startDateTime= new Date($("#startTime").val());
         appointmentInfo.endDateTime= new Date($("#endTime").val());;
+
+        // var sc_appointmentInfo = {
+        //     equipmentNo:   appointmentInfo.equipmentNo,
+        //     startDateTime: appointmentInfo.startDateTime,
+        //     endDateTime:   appointmentInfo.endDateTime,
+        //     startTime: {
+        //         "year"    : 2017,
+        //         "month"   : 7,
+        //         "date"    : 13,
+        //         "hours"   : 8,
+        //         "minutes" : 30
+        //     },
+        //     endTime: {
+        //         "year"    : 2017,
+        //         "month"   : 7,
+        //         "date"    : 13,
+        //         "hours"   : 14,
+        //         "minutes" : 30
+        //     }
+        // };
         $.post("/makeappointment", appointmentInfo, function(data) {
             $("#outputheader").text(data);
         },"text");
-
       }
 
   body(onload="setDateTime()")

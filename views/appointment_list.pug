@@ -11,7 +11,15 @@ html
     block scripts
     script(type="text/javascript").
       function initFlatpickr() {
+
           flatpickr("#selectDate", {
+            onChange: function(selectedDates, dateStr, instance) {
+                 console.log(dateStr);
+               $.post("/list", {"dateStr": dateStr}, function(data) {
+                 console.log(data);
+               });
+             },
+
             // minDate: "today",
             defaultDate: "today"
          });
@@ -20,3 +28,5 @@ html
   body(onload="initFlatpickr()")
       h3#title  预约查询,请选择日期
       input#selectDate(class='faltpickr flatpickr-input active', type='text',placeholder='Select start time')
+
+      p#results=results_str
