@@ -255,21 +255,17 @@ router.get('/list',  function(req, res){
     var date = today.getDate();
     console.log(today.toString(), month, date);
     var qurey = {
-        "endTime.year":{ $eq:2017}
+        "startTime.month":{ $eq:month},
+        "startTime.date":{ $eq:date}
     };
-    console.log(qurey);
+    // console.log(qurey);
 
-    var qurey2 = {
-        // "user": {$eq:"he"},
-        "equipmentNo": {$eq:'8'}
-    };
-    console.log(qurey2);
     db.collection('appointment').find(qurey).toArray(function(err, results) {
         console.log(results);
         // send HTML file populated with quotes here
+        res.render('appointment_list', {results_str:results});
     });
 
-    res.render('appointment_list', {results_str:'test'});
     //res.send('Wahoo! restricted area, click to <a href="/logout">logout</a>');
 });
 
@@ -287,7 +283,8 @@ router.post('/list',  function(req, res){
 
     db.collection('appointment').find(qurey).toArray(function(err, results) {
         console.log(results);
-        res.render('appointment_list', {results_str:JSON.stringify(results)});
+        //res.render('appointment_list', {results_str:JSON.stringify(results)});
+        res.render('appointment_list', {results_str:results});
         // send HTML file populated with quotes here
     });
 
