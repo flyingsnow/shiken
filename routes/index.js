@@ -2,11 +2,20 @@ var express = require('express');
 var hash = require('pbkdf2-password')();
 var MongoClient = require('mongodb').MongoClient;
 var assert = require('assert');
+
+var jsonfile = require('jsonfile');
+jsonfile.spaces = 2;
+var fs = require('fs');
+var file = './public/events.json';
+
 var db;
+
+var moment = require('moment');
 
 var router = express.Router();
 
 var url = 'mongodb://localhost:27017/mydb';
+// var url = 'mongodb://he:62346888@ds129723.mlab.com:29723/shiken';
 // Use connect method to connect to the server
 MongoClient.connect(url, function(err, database) {
     assert.equal(null, err);
@@ -39,6 +48,9 @@ router.post('/makeappointment', restrict, function(req, res, next) {
     var startDateTime = new Date(apoint.startDateTime);
     var endDateTime   = new Date(apoint.endDateTime);
 
+    var startDateTime_m = moment(apoint.startDateTime).add(8, 'hours');
+    var endDateTime_m   = moment(apoint.endDateTime).add(8, 'hours');
+
     var sc_appointmentInfo = {
         equipmentNo:   apoint.equipmentNo,
         startDateTime: apoint.startDateTime,
@@ -70,6 +82,29 @@ router.post('/makeappointment', restrict, function(req, res, next) {
             db.collection('appointment').save(sc_appointmentInfo, (err, result) => {
                 if (err) return console.log(err);
                 console.log('saved to database');
+                var event = result.ops[0];
+
+                var insertJson ={ "id": event._id,
+                                  "resourceId": event.equipmentNo,
+                                  "start": startDateTime_m.toISOString(),
+                                  "end": endDateTime_m.toISOString(),
+                                  "title":  event.user
+                                };
+                console.log(insertJson);
+                fs.readFile(file, 'utf8', function (err, data) {
+                    if (err) throw err;
+                    obj = JSON.parse(data);
+                    obj.push(insertJson);
+
+                    jsonfile.writeFile(file, obj, function (err) {
+                        console.error(err)
+                    });
+                });
+
+                // jsonfile.writeFile(file, insertJson, {flag: 'a'}, function (err) {
+                //     console.error(err);
+                // });
+
             });
             //console.log(req.session);
             res.send(new Buffer(req.session.user.name + ', your appointment is accept!'));
@@ -81,9 +116,8 @@ router.post('/makeappointment', restrict, function(req, res, next) {
 });
 
 /* GET join page. */
-router.get('/join', function(
-req, res,next) {
-	  res.render('join',{});	
+router.get('/join', function(req, res,next) {
+	  res.render('join',{});
 });
 
 router.post('/join', function(req, res){
@@ -93,7 +127,7 @@ router.post('/join', function(req, res){
         console.log("count: " + count);
         if (err) return console.log(err);
         if ( count > 0 ) {
-	          res.render('join',{message: 'username in used.'});	
+	          res.render('join',{message: 'username in used.'});
             return console.log("username is in used");
         }
         else {
@@ -114,7 +148,7 @@ router.post('/join', function(req, res){
 
 /* GET login page. */
 router.get('/login', function(req, res,next) {
-	  res.render('login',{message: res.locals.message});	
+	  res.render('login',{message: res.locals.message});
 });
 
 /*
@@ -248,7 +282,7 @@ MongoClient.connect('mongodb://localhost:27017/mydb', function(err, db) {
 
 */
 //router.get('/list', restrict, function(req, res){
-router.get('/list',  function(req, res){
+router.get('/list',  restrict,function(req, res) {
     var today = new Date();
     var year = today.getFullYear();
     var month = today.getMonth();
@@ -269,7 +303,7 @@ router.get('/list',  function(req, res){
     //res.send('Wahoo! restricted area, click to <a href="/logout">logout</a>');
 });
 
-router.post('/list',  function(req, res){
+router.post('/list',  function(req, res) {
     var qureyDate = Date.parse(req.body.dateStr);
     var today = new Date(qureyDate );
     var year  = today.getFullYear();
